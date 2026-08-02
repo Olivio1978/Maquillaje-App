@@ -18,6 +18,12 @@ export function Layout() {
           <NavLink to="/citas" className={({ isActive }) => (isActive ? 'active' : '')}>
             Citas
           </NavLink>
+          <NavLink to="/productos" className={({ isActive }) => (isActive ? 'active' : '')}>
+            Productos
+          </NavLink>
+          <NavLink to="/compras" className={({ isActive }) => (isActive ? 'active' : '')}>
+            Compras
+          </NavLink>
         </nav>
         <div className="app-user">
           <span>{session?.user?.email}</span>

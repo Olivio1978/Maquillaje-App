@@ -6,6 +6,8 @@ import { LoginPage } from './pages/LoginPage'
 import { ClientasPage } from './pages/ClientasPage'
 import { ServiciosPage } from './pages/ServiciosPage'
 import { CitasPage } from './pages/CitasPage'
+import { ProductosPage } from './pages/ProductosPage'
+import { ComprasPage } from './pages/ComprasPage'
 import './App.css'
 
 function App() {
@@ -24,6 +26,8 @@ function App() {
             <Route path="/clientas" element={<ClientasPage />} />
             <Route path="/servicios" element={<ServiciosPage />} />
             <Route path="/citas" element={<CitasPage />} />
+            <Route path="/productos" element={<ProductosPage />} />
+            <Route path="/compras" element={<ComprasPage />} />
             <Route path="/" element={<Navigate to="/clientas" replace />} />
           </Route>
         </Routes>
