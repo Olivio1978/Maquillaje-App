@@ -24,6 +24,12 @@ export function Layout() {
           <NavLink to="/compras" className={({ isActive }) => (isActive ? 'active' : '')}>
             Compras
           </NavLink>
+          <NavLink to="/ingresos" className={({ isActive }) => (isActive ? 'active' : '')}>
+            Ingresos
+          </NavLink>
+          <NavLink to="/gastos" className={({ isActive }) => (isActive ? 'active' : '')}>
+            Gastos
+          </NavLink>
         </nav>
         <div className="app-user">
           <span>{session?.user?.email}</span>

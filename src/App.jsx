@@ -8,6 +8,8 @@ import { ServiciosPage } from './pages/ServiciosPage'
 import { CitasPage } from './pages/CitasPage'
 import { ProductosPage } from './pages/ProductosPage'
 import { ComprasPage } from './pages/ComprasPage'
+import { IngresosPage } from './pages/IngresosPage'
+import { GastosPage } from './pages/GastosPage'
 import './App.css'
 
 function App() {
@@ -28,6 +30,8 @@ function App() {
             <Route path="/citas" element={<CitasPage />} />
             <Route path="/productos" element={<ProductosPage />} />
             <Route path="/compras" element={<ComprasPage />} />
+            <Route path="/ingresos" element={<IngresosPage />} />
+            <Route path="/gastos" element={<GastosPage />} />
             <Route path="/" element={<Navigate to="/clientas" replace />} />
           </Route>
         </Routes>
