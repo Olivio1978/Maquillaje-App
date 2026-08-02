@@ -201,10 +201,10 @@ export function GastosPage() {
           <tbody>
             {gastos.map((gasto) => (
               <tr key={gasto.id}>
-                <td>{formatDateOnly(gasto.fecha)}</td>
-                <td>{gasto.categoria || '—'}</td>
-                <td>{currencyFormatter.format(gasto.monto)}</td>
-                <td>{gasto.proveedor || '—'}</td>
+                <td data-label="Fecha">{formatDateOnly(gasto.fecha)}</td>
+                <td data-label="Categoría">{gasto.categoria || '—'}</td>
+                <td data-label="Monto">{currencyFormatter.format(gasto.monto)}</td>
+                <td data-label="Proveedor">{gasto.proveedor || '—'}</td>
                 <td className="row-actions">
                   <button type="button" className="link-button" onClick={() => openEditForm(gasto)}>
                     Editar

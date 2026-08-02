@@ -212,10 +212,10 @@ export function ProductosPage() {
           <tbody>
             {productos.map((producto) => (
               <tr key={producto.id}>
-                <td>{producto.nombre}</td>
-                <td>{producto.marca || '—'}</td>
-                <td>{producto.presentacion || '—'}</td>
-                <td>{producto.estado_desempeno}</td>
+                <td data-label="Nombre">{producto.nombre}</td>
+                <td data-label="Marca">{producto.marca || '—'}</td>
+                <td data-label="Presentación">{producto.presentacion || '—'}</td>
+                <td data-label="Estado">{producto.estado_desempeno}</td>
                 <td className="row-actions">
                   <button type="button" className="link-button" onClick={() => openEditForm(producto)}>
                     Editar

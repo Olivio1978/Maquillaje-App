@@ -183,9 +183,9 @@ export function ServiciosPage() {
           <tbody>
             {servicios.map((servicio) => (
               <tr key={servicio.id}>
-                <td>{servicio.nombre}</td>
-                <td>{currencyFormatter.format(servicio.precio_base)}</td>
-                <td>
+                <td data-label="Nombre">{servicio.nombre}</td>
+                <td data-label="Precio base">{currencyFormatter.format(servicio.precio_base)}</td>
+                <td data-label="Duración">
                   {servicio.duracion_estimada_minutos
                     ? `${servicio.duracion_estimada_minutos} min`
                     : '—'}

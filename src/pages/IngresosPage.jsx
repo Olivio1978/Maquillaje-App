@@ -223,11 +223,11 @@ export function IngresosPage() {
           <tbody>
             {ingresos.map((ingreso) => (
               <tr key={ingreso.id}>
-                <td>{formatDateOnly(ingreso.fecha)}</td>
-                <td>{currencyFormatter.format(ingreso.monto)}</td>
-                <td>{ingreso.metodo_pago || '—'}</td>
-                <td>{ingreso.concepto || '—'}</td>
-                <td>{ingreso.citas ? citaLabel(ingreso.citas) : '—'}</td>
+                <td data-label="Fecha">{formatDateOnly(ingreso.fecha)}</td>
+                <td data-label="Monto">{currencyFormatter.format(ingreso.monto)}</td>
+                <td data-label="Método de pago">{ingreso.metodo_pago || '—'}</td>
+                <td data-label="Concepto">{ingreso.concepto || '—'}</td>
+                <td data-label="Cita">{ingreso.citas ? citaLabel(ingreso.citas) : '—'}</td>
                 <td className="row-actions">
                   <button type="button" className="link-button" onClick={() => openEditForm(ingreso)}>
                     Editar

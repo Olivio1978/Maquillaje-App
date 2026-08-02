@@ -183,10 +183,10 @@ export function ClientasPage() {
           <tbody>
             {clientas.map((clienta) => (
               <tr key={clienta.id}>
-                <td>{clienta.nombre}</td>
-                <td>{clienta.telefono || '—'}</td>
-                <td>{clienta.email || '—'}</td>
-                <td>{new Date(clienta.fecha_registro).toLocaleDateString('es-MX')}</td>
+                <td data-label="Nombre">{clienta.nombre}</td>
+                <td data-label="Teléfono">{clienta.telefono || '—'}</td>
+                <td data-label="Email">{clienta.email || '—'}</td>
+                <td data-label="Registrada">{new Date(clienta.fecha_registro).toLocaleDateString('es-MX')}</td>
                 <td className="row-actions">
                   <button type="button" className="link-button" onClick={() => openEditForm(clienta)}>
                     Editar

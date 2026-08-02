@@ -226,12 +226,12 @@ export function ComprasPage() {
           <tbody>
             {compras.map((compra) => (
               <tr key={compra.id}>
-                <td>{compra.productos?.nombre ?? '—'}</td>
-                <td>{compra.proveedor || '—'}</td>
-                <td>{formatDateOnly(compra.fecha)}</td>
-                <td>{compra.cantidad}</td>
-                <td>{currencyFormatter.format(compra.costo_unitario)}</td>
-                <td>{currencyFormatter.format(compra.costo_total)}</td>
+                <td data-label="Producto">{compra.productos?.nombre ?? '—'}</td>
+                <td data-label="Proveedor">{compra.proveedor || '—'}</td>
+                <td data-label="Fecha">{formatDateOnly(compra.fecha)}</td>
+                <td data-label="Cantidad">{compra.cantidad}</td>
+                <td data-label="Costo unitario">{currencyFormatter.format(compra.costo_unitario)}</td>
+                <td data-label="Costo total">{currencyFormatter.format(compra.costo_total)}</td>
                 <td className="row-actions">
                   <button type="button" className="link-button" onClick={() => openEditForm(compra)}>
                     Editar

@@ -2,22 +2,38 @@ import { useEffect, useState } from 'react'
 import { supabase } from '../lib/supabaseClient'
 
 const ESTATUS_OPTIONS = ['Agendada', 'Confirmada', 'Realizada', 'Cancelada']
+const ESTADO_PAGO_OPTIONS = ['Sin pagar', 'Con anticipo', 'Pagada']
 
 const emptyForm = {
   clienta_id: '',
   fecha_hora: '',
   estatus: 'Agendada',
+  estado_pago: 'Sin pagar',
   anticipo_pagado: false,
   monto_anticipo: '',
   notas: '',
   servicio_ids: [],
 }
 
+function pad(n) {
+  return String(n).padStart(2, '0')
+}
+
 function toDatetimeLocal(isoString) {
   if (!isoString) return ''
   const date = new Date(isoString)
-  const pad = (n) => String(n).padStart(2, '0')
   return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`
+}
+
+function toLocalDateString(isoString) {
+  const date = new Date(isoString)
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`
+}
+
+function estadoPagoClass(estado) {
+  if (estado === 'Pagada') return 'badge badge-success'
+  if (estado === 'Con anticipo') return 'badge badge-warning'
+  return 'badge badge-neutral'
 }
 
 export function CitasPage() {
@@ -30,6 +46,7 @@ export function CitasPage() {
   const [editingId, setEditingId] = useState(null)
   const [form, setForm] = useState(emptyForm)
   const [saving, setSaving] = useState(false)
+  const [filterDate, setFilterDate] = useState('')
 
   async function loadAll() {
     setLoading(true)
@@ -70,6 +87,7 @@ export function CitasPage() {
       clienta_id: cita.clienta_id,
       fecha_hora: toDatetimeLocal(cita.fecha_hora),
       estatus: cita.estatus,
+      estado_pago: cita.estado_pago,
       anticipo_pagado: cita.anticipo_pagado,
       monto_anticipo: cita.monto_anticipo ?? '',
       notas: cita.notas ?? '',
@@ -93,6 +111,21 @@ export function CitasPage() {
     }))
   }
 
+  function toggleAnticipo(checked) {
+    setForm((prev) => ({
+      ...prev,
+      anticipo_pagado: checked,
+      estado_pago: checked && prev.estado_pago === 'Sin pagar' ? 'Con anticipo' : prev.estado_pago,
+    }))
+  }
+
+  function conflictMessage(err) {
+    if (err?.code === '23505') {
+      return 'Ya hay una cita agendada en esa fecha y hora. Elige otro horario.'
+    }
+    return err.message
+  }
+
   async function handleSubmit(e) {
     e.preventDefault()
     setSaving(true)
@@ -102,6 +135,7 @@ export function CitasPage() {
       clienta_id: form.clienta_id,
       fecha_hora: new Date(form.fecha_hora).toISOString(),
       estatus: form.estatus,
+      estado_pago: form.estado_pago,
       anticipo_pagado: form.anticipo_pagado,
       monto_anticipo: form.anticipo_pagado && form.monto_anticipo ? Number(form.monto_anticipo) : null,
       notas: form.notas.trim() || null,
@@ -113,7 +147,7 @@ export function CitasPage() {
       const { error: updateError } = await supabase.from('citas').update(payload).eq('id', editingId)
       if (updateError) {
         setSaving(false)
-        setError(updateError.message)
+        setError(conflictMessage(updateError))
         return
       }
       await supabase.from('cita_servicios').delete().eq('cita_id', editingId)
@@ -121,7 +155,7 @@ export function CitasPage() {
       const { data, error: insertError } = await supabase.from('citas').insert(payload).select('id').single()
       if (insertError) {
         setSaving(false)
-        setError(insertError.message)
+        setError(conflictMessage(insertError))
         return
       }
       citaId = data.id
@@ -158,6 +192,10 @@ export function CitasPage() {
     loadAll()
   }
 
+  const filteredCitas = filterDate
+    ? citas.filter((cita) => toLocalDateString(cita.fecha_hora) === filterDate)
+    : citas
+
   return (
     <div className="page">
       <div className="page-header">
@@ -173,6 +211,23 @@ export function CitasPage() {
 
       {clientas.length === 0 && !loading && (
         <p className="empty">Registra al menos una clienta antes de agendar citas.</p>
+      )}
+
+      {!formOpen && (
+        <div className="filter-bar">
+          <label htmlFor="filterDate">Filtrar por fecha</label>
+          <input
+            id="filterDate"
+            type="date"
+            value={filterDate}
+            onChange={(e) => setFilterDate(e.target.value)}
+          />
+          {filterDate && (
+            <button type="button" className="secondary" onClick={() => setFilterDate('')}>
+              Ver todas
+            </button>
+          )}
+        </div>
       )}
 
       {formOpen && (
@@ -233,11 +288,24 @@ export function CitasPage() {
             ))}
           </div>
 
+          <label htmlFor="estado_pago">Estatus de pago</label>
+          <select
+            id="estado_pago"
+            value={form.estado_pago}
+            onChange={(e) => setForm({ ...form, estado_pago: e.target.value })}
+          >
+            {ESTADO_PAGO_OPTIONS.map((estado) => (
+              <option key={estado} value={estado}>
+                {estado}
+              </option>
+            ))}
+          </select>
+
           <label className="checkbox-item">
             <input
               type="checkbox"
               checked={form.anticipo_pagado}
-              onChange={(e) => setForm({ ...form, anticipo_pagado: e.target.checked })}
+              onChange={(e) => toggleAnticipo(e.target.checked)}
             />
             Anticipo pagado
           </label>
@@ -277,8 +345,10 @@ export function CitasPage() {
 
       {loading ? (
         <p className="loading">Cargando…</p>
-      ) : citas.length === 0 ? (
-        <p className="empty">Aún no hay citas registradas.</p>
+      ) : filteredCitas.length === 0 ? (
+        <p className="empty">
+          {filterDate ? 'No hay citas en esa fecha.' : 'Aún no hay citas registradas.'}
+        </p>
       ) : (
         <table className="record-table">
           <thead>
@@ -287,27 +357,30 @@ export function CitasPage() {
               <th>Fecha y hora</th>
               <th>Servicios</th>
               <th>Estatus</th>
-              <th>Anticipo</th>
+              <th>Pago</th>
               <th></th>
             </tr>
           </thead>
           <tbody>
-            {citas.map((cita) => (
+            {filteredCitas.map((cita) => (
               <tr key={cita.id}>
-                <td>{cita.clientas?.nombre ?? '—'}</td>
-                <td>
+                <td data-label="Clienta">{cita.clientas?.nombre ?? '—'}</td>
+                <td data-label="Fecha y hora">
                   {new Date(cita.fecha_hora).toLocaleString('es-MX', {
                     dateStyle: 'medium',
                     timeStyle: 'short',
                   })}
                 </td>
-                <td>
+                <td data-label="Servicios">
                   {cita.cita_servicios.length > 0
                     ? cita.cita_servicios.map((cs) => cs.servicios?.nombre).join(', ')
                     : '—'}
                 </td>
-                <td>{cita.estatus}</td>
-                <td>{cita.anticipo_pagado ? `Sí ($${cita.monto_anticipo ?? 0})` : 'No'}</td>
+                <td data-label="Estatus">{cita.estatus}</td>
+                <td data-label="Pago">
+                  <span className={estadoPagoClass(cita.estado_pago)}>{cita.estado_pago}</span>
+                  {cita.anticipo_pagado && cita.monto_anticipo ? ` ($${cita.monto_anticipo})` : ''}
+                </td>
                 <td className="row-actions">
                   <button type="button" className="link-button" onClick={() => openEditForm(cita)}>
                     Editar
