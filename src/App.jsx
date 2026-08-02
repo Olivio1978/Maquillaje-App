@@ -4,6 +4,7 @@ import { ProtectedRoute } from './components/ProtectedRoute'
 import { Layout } from './components/Layout'
 import { LoginPage } from './pages/LoginPage'
 import { ClientasPage } from './pages/ClientasPage'
+import { ServiciosPage } from './pages/ServiciosPage'
 import './App.css'
 
 function App() {
@@ -20,6 +21,7 @@ function App() {
             }
           >
             <Route path="/clientas" element={<ClientasPage />} />
+            <Route path="/servicios" element={<ServiciosPage />} />
             <Route path="/" element={<Navigate to="/clientas" replace />} />
           </Route>
         </Routes>
