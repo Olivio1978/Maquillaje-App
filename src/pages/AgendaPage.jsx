@@ -92,6 +92,24 @@ export function AgendaPage() {
     return dateStr === today || dateStr === addDays(today, 1)
   })
 
+  const monthLabel = (() => {
+    const d = new Date(selectedDate + 'T00:00:00')
+    const s = new Intl.DateTimeFormat('es-ES', { month: 'long', year: 'numeric' }).format(d)
+    return s.charAt(0).toUpperCase() + s.slice(1)
+  })()
+
+  function goPrevWeek() {
+    setSelectedDate((d) => addDays(d, -7))
+  }
+
+  function goNextWeek() {
+    setSelectedDate((d) => addDays(d, 7))
+  }
+
+  function goToday() {
+    setSelectedDate(today)
+  }
+
   function openCreateForm() {
     setEditingId(null)
     setForm({ ...emptyForm, fecha_hora: `${selectedDate}T10:00` })
@@ -213,9 +231,32 @@ export function AgendaPage() {
   return (
     <div className="page">
       <h6 style={{ color: 'var(--color-accent-700)' }}>Agenda semanal</h6>
-      <h3>{fmtDateLong(selectedDate)}</h3>
 
       {error && <p className="error">{error}</p>}
+
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+        <button type="button" className="btn-fab" onClick={goPrevWeek} aria-label="Semana anterior">
+          ‹
+        </button>
+        <h3 style={{ margin: 0 }}>{monthLabel}</h3>
+        <button type="button" className="btn-fab" onClick={goNextWeek} aria-label="Semana siguiente">
+          ›
+        </button>
+      </div>
+
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, marginBottom: 14 }}>
+        <button type="button" className="btn-fab" onClick={goToday}>
+          Hoy
+        </button>
+        <input
+          type="date"
+          className="input"
+          style={{ maxWidth: 170 }}
+          value={selectedDate}
+          onChange={(e) => setSelectedDate(e.target.value)}
+          aria-label="Saltar a una fecha"
+        />
+      </div>
 
       <div className="week-strip">
         {weekDays.map((d) => (
