@@ -1,15 +1,16 @@
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
-import { AuthProvider } from './context/AuthContext'
+import { AuthProvider, useAuth } from './context/AuthContext'
 import { ProtectedRoute } from './components/ProtectedRoute'
-import { Layout } from './components/Layout'
+import { AdminLayout, ClientLayout } from './components/Layout'
 import { LoginPage } from './pages/LoginPage'
+import { AgendaPage } from './pages/AgendaPage'
 import { ClientasPage } from './pages/ClientasPage'
 import { ServiciosPage } from './pages/ServiciosPage'
-import { CitasPage } from './pages/CitasPage'
-import { ProductosPage } from './pages/ProductosPage'
+import { FinanzasPage } from './pages/FinanzasPage'
 import { ComprasPage } from './pages/ComprasPage'
-import { IngresosPage } from './pages/IngresosPage'
-import { GastosPage } from './pages/GastosPage'
+import { GaleriaPage } from './pages/GaleriaPage'
+import { ReservarPage } from './pages/ReservarPage'
+import { MisCitasPage } from './pages/MisCitasPage'
 import './App.css'
 
 function App() {
@@ -18,26 +19,54 @@ function App() {
       <AuthProvider>
         <Routes>
           <Route path="/login" element={<LoginPage />} />
+
           <Route
+            path="/app"
             element={
-              <ProtectedRoute>
-                <Layout />
+              <ProtectedRoute role="admin">
+                <AdminLayout />
               </ProtectedRoute>
             }
           >
-            <Route path="/clientas" element={<ClientasPage />} />
-            <Route path="/servicios" element={<ServiciosPage />} />
-            <Route path="/citas" element={<CitasPage />} />
-            <Route path="/productos" element={<ProductosPage />} />
-            <Route path="/compras" element={<ComprasPage />} />
-            <Route path="/ingresos" element={<IngresosPage />} />
-            <Route path="/gastos" element={<GastosPage />} />
-            <Route path="/" element={<Navigate to="/clientas" replace />} />
+            <Route path="agenda" element={<AgendaPage />} />
+            <Route path="clientas" element={<ClientasPage />} />
+            <Route path="servicios" element={<ServiciosPage />} />
+            <Route path="finanzas" element={<FinanzasPage />} />
+            <Route path="compras" element={<ComprasPage />} />
+            <Route path="galeria" element={<GaleriaPage />} />
+            <Route index element={<Navigate to="agenda" replace />} />
           </Route>
+
+          <Route
+            path="/portal"
+            element={
+              <ProtectedRoute role="clienta">
+                <ClientLayout />
+              </ProtectedRoute>
+            }
+          >
+            <Route path="reservar" element={<ReservarPage />} />
+            <Route path="mis-citas" element={<MisCitasPage />} />
+            <Route index element={<Navigate to="reservar" replace />} />
+          </Route>
+
+          <Route
+            path="/"
+            element={
+              <ProtectedRoute>
+                <RoleRedirect />
+              </ProtectedRoute>
+            }
+          />
         </Routes>
       </AuthProvider>
     </BrowserRouter>
   )
+}
+
+function RoleRedirect() {
+  const { role } = useAuth()
+  return <Navigate to={role === 'clienta' ? '/portal/reservar' : '/app/agenda'} replace />
 }
 
 export default App

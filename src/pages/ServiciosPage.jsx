@@ -1,9 +1,15 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '../lib/supabaseClient'
+import { fmtMoney } from '../lib/format'
 
-const emptyForm = { nombre: '', descripcion: '', precio_base: '', duracion_estimada_minutos: '' }
-
-const currencyFormatter = new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' })
+const emptyForm = {
+  nombre: '',
+  descripcion: '',
+  precio_base: '',
+  duracion_estimada_minutos: '',
+  requiere_anticipo: false,
+  monto_anticipo_sugerido: '',
+}
 
 export function ServiciosPage() {
   const [servicios, setServicios] = useState([])
@@ -47,6 +53,8 @@ export function ServiciosPage() {
       descripcion: servicio.descripcion ?? '',
       precio_base: servicio.precio_base ?? '',
       duracion_estimada_minutos: servicio.duracion_estimada_minutos ?? '',
+      requiere_anticipo: servicio.requiere_anticipo ?? false,
+      monto_anticipo_sugerido: servicio.monto_anticipo_sugerido ?? '',
     })
     setFormOpen(true)
   }
@@ -66,8 +74,10 @@ export function ServiciosPage() {
       nombre: form.nombre.trim(),
       descripcion: form.descripcion.trim() || null,
       precio_base: Number(form.precio_base),
-      duracion_estimada_minutos: form.duracion_estimada_minutos
-        ? Number(form.duracion_estimada_minutos)
+      duracion_estimada_minutos: form.duracion_estimada_minutos ? Number(form.duracion_estimada_minutos) : null,
+      requiere_anticipo: form.requiere_anticipo,
+      monto_anticipo_sugerido: form.requiere_anticipo && form.monto_anticipo_sugerido
+        ? Number(form.monto_anticipo_sugerido)
         : null,
     }
 
@@ -104,108 +114,134 @@ export function ServiciosPage() {
   return (
     <div className="page">
       <div className="page-header">
-        <h1>Servicios</h1>
-        {!formOpen && (
-          <button type="button" onClick={openCreateForm}>
-            Nuevo servicio
-          </button>
-        )}
+        <h3 style={{ margin: 0 }}>Servicios</h3>
+        <button type="button" className="btn-fab" onClick={openCreateForm}>
+          + Nuevo
+        </button>
       </div>
 
       {error && <p className="error">{error}</p>}
-
-      {formOpen && (
-        <form className="record-form" onSubmit={handleSubmit}>
-          <h2>{editingId ? 'Editar servicio' : 'Nuevo servicio'}</h2>
-
-          <label htmlFor="nombre">Nombre *</label>
-          <input
-            id="nombre"
-            value={form.nombre}
-            onChange={(e) => setForm({ ...form, nombre: e.target.value })}
-            required
-          />
-
-          <label htmlFor="descripcion">Descripción</label>
-          <textarea
-            id="descripcion"
-            rows={3}
-            value={form.descripcion}
-            onChange={(e) => setForm({ ...form, descripcion: e.target.value })}
-          />
-
-          <label htmlFor="precio_base">Precio base *</label>
-          <input
-            id="precio_base"
-            type="number"
-            min="0"
-            step="0.01"
-            value={form.precio_base}
-            onChange={(e) => setForm({ ...form, precio_base: e.target.value })}
-            required
-          />
-
-          <label htmlFor="duracion_estimada_minutos">Duración estimada (minutos)</label>
-          <input
-            id="duracion_estimada_minutos"
-            type="number"
-            min="0"
-            step="1"
-            value={form.duracion_estimada_minutos}
-            onChange={(e) => setForm({ ...form, duracion_estimada_minutos: e.target.value })}
-          />
-
-          <div className="form-actions">
-            <button type="submit" disabled={saving}>
-              {saving ? 'Guardando…' : 'Guardar'}
-            </button>
-            <button type="button" className="secondary" onClick={closeForm}>
-              Cancelar
-            </button>
-          </div>
-        </form>
-      )}
 
       {loading ? (
         <p className="loading">Cargando…</p>
       ) : servicios.length === 0 ? (
         <p className="empty">Aún no hay servicios registrados.</p>
       ) : (
-        <table className="record-table">
-          <thead>
-            <tr>
-              <th>Nombre</th>
-              <th>Precio base</th>
-              <th>Duración</th>
-              <th></th>
-            </tr>
-          </thead>
-          <tbody>
-            {servicios.map((servicio) => (
-              <tr key={servicio.id}>
-                <td data-label="Nombre">{servicio.nombre}</td>
-                <td data-label="Precio base">{currencyFormatter.format(servicio.precio_base)}</td>
-                <td data-label="Duración">
-                  {servicio.duracion_estimada_minutos
-                    ? `${servicio.duracion_estimada_minutos} min`
-                    : '—'}
-                </td>
-                <td className="row-actions">
-                  <button type="button" className="link-button" onClick={() => openEditForm(servicio)}>
-                    Editar
-                  </button>
-                  <button
-                    type="button"
-                    className="link-button danger"
-                    onClick={() => handleDelete(servicio)}
-                  >
-                    Eliminar
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+        <div className="card-list">
+          {servicios.map((s) => (
+            <div key={s.id} className="card-row" onClick={() => openEditForm(s)} style={{ alignItems: 'flex-start' }}>
+              <div style={{ flex: 1 }}>
+                <div style={{ fontSize: 14.5, fontWeight: 600, marginBottom: 2 }}>{s.nombre}</div>
+                <div style={{ fontSize: 12, opacity: 0.65 }}>
+                  {s.duracion_estimada_minutos ? `${s.duracion_estimada_minutos} min` : 'Duración sin definir'}
+                </div>
+                {s.requiere_anticipo && (
+                  <div style={{ fontSize: 11.5, marginTop: 4 }}>
+                    <span className="tag tag-accent-2">Requiere anticipo</span>
+                  </div>
+                )}
+              </div>
+              <div style={{ fontFamily: 'var(--font-heading)', fontSize: 17, fontWeight: 600, color: 'var(--color-accent-700)' }}>
+                {fmtMoney(s.precio_base)}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {formOpen && (
+        <div className="dialog-backdrop" onClick={closeForm}>
+          <form className="dialog" onClick={(e) => e.stopPropagation()} onSubmit={handleSubmit}>
+            <h4 className="dialog-title">{editingId ? 'Editar servicio' : 'Nuevo servicio'}</h4>
+
+            <div className="field">
+              <label htmlFor="nombre">Nombre *</label>
+              <input
+                id="nombre"
+                className="input"
+                value={form.nombre}
+                onChange={(e) => setForm({ ...form, nombre: e.target.value })}
+                required
+              />
+            </div>
+
+            <div className="field">
+              <label htmlFor="descripcion">Descripción</label>
+              <textarea
+                id="descripcion"
+                className="input"
+                rows={2}
+                value={form.descripcion}
+                onChange={(e) => setForm({ ...form, descripcion: e.target.value })}
+              />
+            </div>
+
+            <div className="field">
+              <label htmlFor="precio_base">Precio base *</label>
+              <input
+                id="precio_base"
+                type="number"
+                min="0"
+                step="0.01"
+                className="input"
+                value={form.precio_base}
+                onChange={(e) => setForm({ ...form, precio_base: e.target.value })}
+                required
+              />
+            </div>
+
+            <div className="field">
+              <label htmlFor="duracion_estimada_minutos">Duración estimada (minutos)</label>
+              <input
+                id="duracion_estimada_minutos"
+                type="number"
+                min="0"
+                step="1"
+                className="input"
+                value={form.duracion_estimada_minutos}
+                onChange={(e) => setForm({ ...form, duracion_estimada_minutos: e.target.value })}
+              />
+            </div>
+
+            <label className="checkbox-item" style={{ marginBottom: 12 }}>
+              <input
+                type="checkbox"
+                checked={form.requiere_anticipo}
+                onChange={(e) => setForm({ ...form, requiere_anticipo: e.target.checked })}
+              />
+              Requiere anticipo para reservar (portal de clienta)
+            </label>
+
+            {form.requiere_anticipo && (
+              <div className="field">
+                <label htmlFor="monto_anticipo_sugerido">Monto de anticipo sugerido</label>
+                <input
+                  id="monto_anticipo_sugerido"
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  className="input"
+                  value={form.monto_anticipo_sugerido}
+                  onChange={(e) => setForm({ ...form, monto_anticipo_sugerido: e.target.value })}
+                />
+              </div>
+            )}
+
+            {error && <p className="error">{error}</p>}
+
+            <div className="dialog-actions">
+              <button type="button" className="btn btn-ghost danger" onClick={() => handleDelete({ id: editingId, nombre: form.nombre })} style={{ marginRight: 'auto', display: editingId ? 'inline-flex' : 'none' }}>
+                Eliminar
+              </button>
+              <button type="button" className="btn btn-secondary" onClick={closeForm}>
+                Cancelar
+              </button>
+              <button type="submit" className="btn btn-primary" disabled={saving}>
+                {saving ? 'Guardando…' : 'Guardar'}
+              </button>
+            </div>
+          </form>
+        </div>
       )}
     </div>
   )

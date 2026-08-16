@@ -3,16 +3,18 @@ import { Navigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 
 export function LoginPage() {
-  const { session, signIn, signUp } = useAuth()
+  const { session, loading, role, signIn, signUpClienta } = useAuth()
   const [mode, setMode] = useState('signIn')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [nombre, setNombre] = useState('')
+  const [telefono, setTelefono] = useState('')
   const [error, setError] = useState(null)
   const [message, setMessage] = useState(null)
   const [submitting, setSubmitting] = useState(false)
 
-  if (session) {
-    return <Navigate to="/clientas" replace />
+  if (session && !loading) {
+    return <Navigate to={role === 'clienta' ? '/portal/reservar' : '/app/agenda'} replace />
   }
 
   async function handleSubmit(e) {
@@ -22,7 +24,7 @@ export function LoginPage() {
     setSubmitting(true)
 
     const { error: authError } =
-      mode === 'signIn' ? await signIn(email, password) : await signUp(email, password)
+      mode === 'signIn' ? await signIn(email, password) : await signUpClienta(email, password, nombre, telefono)
 
     setSubmitting(false)
 
@@ -42,47 +44,78 @@ export function LoginPage() {
       <form className="login-form" onSubmit={handleSubmit}>
         <h1>Maquillaje App</h1>
         <p className="subtitle">
-          {mode === 'signIn' ? 'Inicia sesión para continuar' : 'Crea tu cuenta'}
+          {mode === 'signIn' ? 'Inicia sesión para continuar' : 'Crea tu cuenta de clienta'}
         </p>
 
-        <label htmlFor="email">Correo</label>
-        <input
-          id="email"
-          type="email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          required
-          autoComplete="email"
-        />
+        {mode === 'signUp' && (
+          <>
+            <div className="field">
+              <label htmlFor="nombre">Nombre completo</label>
+              <input
+                id="nombre"
+                className="input"
+                value={nombre}
+                onChange={(e) => setNombre(e.target.value)}
+                required
+              />
+            </div>
+            <div className="field">
+              <label htmlFor="telefono">Teléfono</label>
+              <input
+                id="telefono"
+                className="input"
+                value={telefono}
+                onChange={(e) => setTelefono(e.target.value)}
+              />
+            </div>
+          </>
+        )}
 
-        <label htmlFor="password">Contraseña</label>
-        <input
-          id="password"
-          type="password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          required
-          minLength={6}
-          autoComplete={mode === 'signIn' ? 'current-password' : 'new-password'}
-        />
+        <div className="field">
+          <label htmlFor="email">Correo</label>
+          <input
+            id="email"
+            type="email"
+            className="input"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+            autoComplete="email"
+          />
+        </div>
+
+        <div className="field">
+          <label htmlFor="password">Contraseña</label>
+          <input
+            id="password"
+            type="password"
+            className="input"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+            minLength={6}
+            autoComplete={mode === 'signIn' ? 'current-password' : 'new-password'}
+          />
+        </div>
 
         {error && <p className="error">{error}</p>}
         {message && <p className="message">{message}</p>}
 
-        <button type="submit" disabled={submitting}>
-          {mode === 'signIn' ? 'Iniciar sesión' : 'Crear cuenta'}
+        <button type="submit" className="btn btn-primary btn-block" disabled={submitting}>
+          {submitting ? 'Un momento…' : mode === 'signIn' ? 'Iniciar sesión' : 'Crear cuenta'}
         </button>
 
         <button
           type="button"
-          className="link-button"
+          className="btn btn-ghost"
+          style={{ marginTop: 12 }}
           onClick={() => {
             setMode(mode === 'signIn' ? 'signUp' : 'signIn')
             setError(null)
             setMessage(null)
           }}
         >
-          {mode === 'signIn' ? '¿No tienes cuenta? Créala' : '¿Ya tienes cuenta? Inicia sesión'}
+          {mode === 'signIn' ? '¿Eres clienta y no tienes cuenta? Regístrate' : '¿Ya tienes cuenta? Inicia sesión'}
         </button>
       </form>
     </div>

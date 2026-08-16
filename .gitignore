@@ -32,3 +32,6 @@ dist-ssr
 
 # Personal files not related to the project
 /Imágenes/
+
+# Handoff de diseño (material de referencia, no forma parte de la app)
+/App_de_control_para_maquillista-handoff/
