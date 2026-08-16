@@ -28,11 +28,19 @@ Aplicación de gestión para un negocio de maquillista independiente: agenda, cl
    node scripts/run-migration.mjs supabase/migrations/0001_init.sql
    node scripts/run-migration.mjs supabase/migrations/0002_citas_estado_pago_y_conflictos.sql
    node scripts/run-migration.mjs supabase/migrations/0003_portal_clienta_galeria_roles.sql
+   node scripts/run-migration.mjs supabase/migrations/0004_harden_function_search_paths.sql
    ```
 
-   La migración `0003` agrega el portal de clienta, la galería (tabla + bucket de
-   Storage privado `galeria`) y las políticas de seguridad (RLS) que separan el
-   acceso de la maquillista del de cada clienta.
+   La migración `0003` agrega la columna `clientas.auth_user_id`, el portal de
+   clienta, la galería (tabla + bucket de Storage privado `galeria`) y las
+   políticas de seguridad (RLS) que separan el acceso de la maquillista del de
+   cada clienta. La `0004` corrige dos hallazgos del linter de seguridad de
+   Supabase (permiso de `anon` sobre `is_admin()` y `search_path` mutable en
+   el trigger de anticipos).
+
+   Nota: en este proyecto ya apliqué ambas migraciones directamente contra el
+   Supabase de producción (`Maquillaje-app`) usando el MCP de Supabase — estos
+   pasos son para levantar un entorno nuevo desde cero.
 
 4. Iniciar el servidor de desarrollo:
 

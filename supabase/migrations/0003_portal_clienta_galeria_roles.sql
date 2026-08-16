@@ -2,6 +2,16 @@
 -- galería de trabajos, y control de acceso por rol (maquillista vs clienta).
 -- Ver CLAUDE.md para la especificación completa.
 
+-- ── clientas: vínculo a su cuenta de Supabase Auth (portal de autoservicio) ─
+-- El CLAUDE.md original ya describía este campo, pero la migración 0001
+-- nunca lo agregó (el MVP inicial era solo para la maquillista).
+alter table clientas
+  add column if not exists auth_user_id uuid references auth.users(id) on delete set null;
+
+create unique index if not exists uq_clientas_auth_user_id
+  on clientas(auth_user_id)
+  where auth_user_id is not null;
+
 -- ── citas: origen de la reserva ─────────────────────────────────────────
 alter table citas
   add column if not exists origen text not null default 'Creada por maquillista'
