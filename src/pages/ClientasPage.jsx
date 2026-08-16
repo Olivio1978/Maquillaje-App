@@ -39,6 +39,7 @@ export function ClientasPage() {
 
   async function openDetail(clienta) {
     setSelectedId(clienta.id)
+    setError(null)
     setDetailLoading(true)
 
     const { data: citas } = await supabase
@@ -120,15 +121,23 @@ export function ClientasPage() {
     }
   }
 
+  function deleteErrorMessage(err) {
+    if (err?.code === '23503') {
+      return 'No se puede eliminar: esta clienta tiene citas registradas. Elimina primero sus citas desde la Agenda, o consérvala para no perder ese historial.'
+    }
+    return err.message
+  }
+
   async function handleDelete(clienta) {
     if (!window.confirm(`¿Eliminar a ${clienta.nombre}? Esta acción no se puede deshacer.`)) {
       return
     }
 
+    setError(null)
     const { error: deleteError } = await supabase.from('clientas').delete().eq('id', clienta.id)
 
     if (deleteError) {
-      setError(deleteError.message)
+      setError(deleteErrorMessage(deleteError))
       return
     }
 
@@ -145,6 +154,8 @@ export function ClientasPage() {
         <button type="button" className="btn-fab" onClick={closeDetail}>
           ← Clientas
         </button>
+
+        {error && <p className="error">{error}</p>}
 
         <div style={{ display: 'flex', alignItems: 'center', gap: 14, margin: '18px 0 16px' }}>
           <div className="avatar avatar-lg">{initials(clienta.nombre)}</div>
